@@ -26,13 +26,13 @@ export const useUserStore = defineStore('user', () => {
             });
             token.value = res.data.token;
             expiresIn.value = res.data.expiresIn;
-            userRole.value = res.data.userRole;
-            userName.value = res.data.userName;
-            localStorage.setItem('user', res.data.userRole);
+            userRole.value = res.data.role;
+            userName.value = res.data.name;
+            localStorage.setItem('user', 'Algo');
+            localStorage.setItem('userR', res.data.refreshToken);
             setTime();
         } catch (error: any) {
             if (error.response) {
-                // console.log(error.response.data);
                 throw error.response.data;
             } else if (error.request) {
                 console.log(error.request);
@@ -46,26 +46,26 @@ export const useUserStore = defineStore('user', () => {
         name: string,
         email: string,
         password: string,
-        phone: string,
-        politiquesAccepted: boolean
+        politiquesAccepted: boolean,
+        role: string
     ) => {
         try {
             const res = await api.post('/register', {
                 name,
                 email,
-                phone,
                 password,
-                politiquesAccepted
+                politiquesAccepted,
+                role
             });
             token.value = res.data.token;
             expiresIn.value = res.data.expiresIn;
-            userRole.value = res.data.userRole;
-            userName.value = res.data.userName;
-            localStorage.setItem('user', res.data.userRole);
+            userRole.value = res.data.role;
+            userName.value = res.data.name;
+            localStorage.setItem('user', 'Algo');
+            localStorage.setItem('userR', res.data.refreshToken);
             setTime();
         } catch (error: any) {
             if (error.response) {
-                // console.log(error.response.data);
                 throw error.response.data;
             } else if (error.request) {
                 console.log(error.request);
@@ -114,17 +114,22 @@ export const useUserStore = defineStore('user', () => {
 
     const refreshToken = async () => {
         console.log('RefreshToken');
+        const refreshToken = localStorage.getItem('userR');
+
         try {
-            const res = await api.get('/refresh');
+            const res = await api.get('/refresh', {
+                headers: { Authorization: `Bearer ${refreshToken}` }
+            });
             token.value = res.data.token;
             expiresIn.value = res.data.expiresIn;
-            userRole.value = res.data.userRole;
-            userName.value = res.data.userName;
-            sessionStorage.setItem('userT', 'usuario cualquiera');
+            userRole.value = res.data.role;
+            userName.value = res.data.name;
+            localStorage.setItem('user', 'Algo');
+            localStorage.setItem('userR', res.data.refreshToken);
             setTime();
         } catch (error: any) {
             console.log(error);
-            sessionStorage.removeItem('userT');
+            localStorage.removeItem('userR');
         }
     };
 

@@ -1,6 +1,8 @@
 //Import tools
 import { Router } from 'express';
 import { adminAuth } from '../middlewares/adminAuth';
+import fs from 'fs-extra';
+import fileUpload from 'express-fileupload';
 import {
     getAllProvider,
     createProvider,
@@ -15,7 +17,15 @@ const providerRouter = Router();
 //Routes
 providerRouter.get('/all', getAllProvider);
 
-providerRouter.post('/', adminAuth, createProvider);
+providerRouter.post(
+    '/',
+    adminAuth,
+    fileUpload({
+        useTempFiles: true,
+        tempFileDir: './uploads',
+    }),
+    createProvider
+);
 
 providerRouter.get('/:id', getProviderById);
 

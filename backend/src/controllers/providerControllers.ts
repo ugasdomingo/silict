@@ -23,35 +23,31 @@ export const getAllProvider = async (req: any, res: any) => {
 // createProvider Controller
 export const createProvider = async (req: any, res: any) => {
     try {
-        const { providerName, brief, website, providerServies } = req.body;
-
-        const date = new Date(Date.now()).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-        });
+        const { providerName, creationDate, brief, website } = req.body;
 
         const provider = new ProviderModel({
-            date,
             providerName,
+            creationDate,
             brief,
             website,
-            providerServies,
         });
 
-        if (req.files?.img) {
-            const result = await uploadProviderLogo(req.files.img.tempFilePath);
+        if (req.files?.logo) {
+            const result = await uploadProviderLogo(
+                req.files.logo.tempFilePath
+            );
             provider.logo = {
                 public_id: result.public_id,
                 secure_url: result.secure_url,
             };
 
-            await fs.unlink(req.files.img.tempFilePath);
+            await fs.unlink(req.files.logo.tempFilePath);
         }
         await provider.save();
 
         res.status(201).json(provider);
     } catch (error: any) {
+        console.log(error);
         return res.status(500).json({ message: error.message });
     }
 };

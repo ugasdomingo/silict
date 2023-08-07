@@ -5,7 +5,7 @@ import { Schema, model } from 'mongoose';
 const enrollmentSchema = new Schema({
     date: {
         type: Date,
-        default: Date.now(),
+        required: true,
     },
     proof_img: {
         public_id: {

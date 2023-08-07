@@ -18,7 +18,7 @@ export const generateToken = (uid: string) => {
 
 //Generate Refresh Token - Only to save at Cookies and use to Refresh User Real Token
 //Expires in 30 days
-export const generateRefreshToken = (uid: string, res: Response) => {
+export const generateRefreshToken = (uid: string) => {
     const expiresIn = 60 * 60 * 24 * 30;
 
     try {
@@ -27,11 +27,8 @@ export const generateRefreshToken = (uid: string, res: Response) => {
             process.env.JWT_REFRESH as string,
             { expiresIn }
         );
-        res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            expires: new Date(Date.now() + expiresIn * 1000),
-        });
+
+        return refreshToken;
     } catch (error: any) {
         console.log(error);
     }

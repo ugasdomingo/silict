@@ -7,9 +7,9 @@ const providerSchema = new Schema({
         type: String,
         required: true,
     },
-    date: {
-        type: Date,
-        default: Date.now(),
+    creationDate: {
+        type: String,
+        required: true,
     },
     brief: {
         type: String,
@@ -17,10 +17,6 @@ const providerSchema = new Schema({
     },
     website: {
         type: String,
-        required: true,
-    },
-    providerServies: {
-        type: [String],
         required: true,
     },
     logo: {

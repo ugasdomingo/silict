@@ -20,6 +20,18 @@ export const getAllService = async (req: any, res: any) => {
     }
 };
 
+export const getAllServiceByCategory = async (req: any, res: any) => {
+    try {
+        const category = req.params.category;
+
+        const services = await ServiceModel.find({ category }).lean();
+
+        res.status(200).json(services);
+    } catch (error: any) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 // createService Controller
 export const createService = async (req: any, res: any) => {
     try {
@@ -31,6 +43,7 @@ export const createService = async (req: any, res: any) => {
             tags,
             description,
             urlVideo,
+            price,
             pid,
         } = req.body;
 
@@ -52,6 +65,7 @@ export const createService = async (req: any, res: any) => {
             tags,
             description,
             urlVideo,
+            price,
             pid,
         });
 

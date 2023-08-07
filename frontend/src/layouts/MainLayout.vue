@@ -1,31 +1,11 @@
 <template>
-    <q-layout view="hHh lpR fff">
-        <q-header elevated class="bg-primary text-white" height-hint="98">
-            <q-toolbar>
-                <q-toolbar-title>
-                    <q-avatar>
-                        <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" />
-                    </q-avatar>
-                    Title
-                </q-toolbar-title>
-
-                <q-tabs class="desktop-menu">
-                    <q-route-tab to="/page1" label="Becas" />
-                    <q-route-tab to="/empieza-ahora" label="¿Qué es Silicit?" />
-                    <q-route-tab to="/page3" label="Mi Escritorio" />
-                </q-tabs>
-                <q-btn dense flat round icon="menu" @click="toggleRightDrawer" />
-            </q-toolbar>
-        </q-header>
-
-        <q-drawer v-model="rightDrawerOpen" side="right" overlay bordered>
-            <q-list>
-                <q-item-label header> Tu futuro comienza ¡Ahora! </q-item-label>
-
-                <NavbarLink v-for="link in navbarLinks" :key="link.title" v-bind="link" />
-            </q-list>
-        </q-drawer>
-
+    <q-layout view="hHh lpR fff" class="layout-container">
+        <NavBarComponent class="normal-menu" />
+        <q-icon name="menu" class="hamburguer-menu" size="2rem">
+            <q-popup-proxy transition-show="flip-up" transition-hide="flip-down" :breakpoint="50">
+                <NavBarComponent />
+            </q-popup-proxy>
+        </q-icon>
         <q-page-container>
             <router-view />
         </q-page-container>
@@ -41,21 +21,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import NavbarLink from 'components/layoutComponents/NavbarLinksComponent.vue';
-import { navbarLinks } from './navbarLinks';
+//Import tools
+import { useUserStore } from 'src/stores/user-store';
 
-const rightDrawerOpen = ref(false);
+//Import Components
+import NavBarComponent from 'src/components/layoutComponents/NavbarComponent.vue';
 
-function toggleRightDrawer() {
-    rightDrawerOpen.value = !rightDrawerOpen.value;
-}
+//Activate tools
+const userStore = useUserStore();
 </script>
 
 <style scoped lang="scss">
+.layout-container {
+    position: relative;
+}
+
+.hamburguer-menu {
+    display: none;
+}
 @media screen and (max-width: 760px) {
-    .desktop-menu {
+    .normal-menu {
         display: none;
+    }
+    .hamburguer-menu {
+        display: inline-block;
+        position: absolute;
+        color: white;
+        top: 2rem;
+        right: 1rem;
+        z-index: 100;
     }
 }
 </style>

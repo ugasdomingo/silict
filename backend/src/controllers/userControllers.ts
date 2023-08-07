@@ -14,7 +14,7 @@ const expiresIn = 60 * 60 * 24 * 30; // Expiration Cookie Rol
 
 // Register Controller
 export const register = async (req: any, res: any) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
 
     try {
         //Validate unique user
@@ -22,24 +22,33 @@ export const register = async (req: any, res: any) => {
         if (uniqueEmail)
             return res.status(400).json({ message: 'Usuario ya Existe' });
 
+        //Set date
+        const date = new Date(Date.now()).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        });
+
         //Create new user
         const user = new UserModel({
             name,
             email,
             password,
+            date,
+            role,
         });
         await user.save();
 
         //Email Validation
 
         //Generate Token & RefreshToken
+        const refreshToken = generateRefreshToken(user.id);
         const response = {
             ...generateToken(user.id),
             role: user.role,
             name: user.name,
+            refreshToken,
         };
-
-        generateRefreshToken(user.id, res);
 
         return res.status(200).json(response);
     } catch (error: any) {
@@ -64,13 +73,14 @@ export const login = async (req: any, res: any) => {
             return res.status(401).json({ message: 'Credenciales Inválidas' });
 
         //Generate Token & RefreshToken
+        const refreshToken = generateRefreshToken(user.id);
+
         const response = {
             ...generateToken(user.id),
             role: user.role,
             name: user.name,
+            refreshToken,
         };
-
-        generateRefreshToken(user.id, res);
 
         res.status(200).json(response);
     } catch (error: any) {
@@ -87,8 +97,8 @@ export const refresh = async (req: any, res: any) => {
     }
 
     try {
-        let refreshTokenCookie = req.headers.cookie;
-        refreshTokenCookie = refreshTokenCookie?.split('=')[1];
+        let refreshTokenCookie = req.headers.authorization;
+        refreshTokenCookie = refreshTokenCookie?.split(' ')[1];
 
         if (!refreshTokenCookie)
             throw new Error('Debes hacer login para ver esta página');
@@ -100,9 +110,12 @@ export const refresh = async (req: any, res: any) => {
 
         const user = await UserModel.findById(uid);
 
+        const refreshToken = generateRefreshToken(user?.id);
         const response = {
             ...generateToken(user?.id),
             role: user?.role,
+            name: user?.name,
+            refreshToken,
         };
 
         return res.status(200).json(response);

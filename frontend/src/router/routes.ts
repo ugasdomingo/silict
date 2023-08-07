@@ -6,7 +6,17 @@ const routes: RouteRecordRaw[] = [
         component: () => import('layouts/MainLayout.vue'),
         children: [
             { path: '', component: () => import('pages/HomePage.vue') },
-            { path: 'empieza-ahora', component: () => import('pages/AboutPage.vue') }
+            {
+                path: 'escritorio',
+                component: () => import('pages/DeskPage.vue'),
+                meta: {
+                    auth: true
+                }
+            },
+            { path: 'estudiantes', component: () => import('pages/StudentPage.vue') },
+            { path: 'profesionales', component: () => import('pages/ProfessionalPage.vue') },
+            { path: 'emprendedores', component: () => import('pages/EntrepreneurPage.vue') },
+            { path: 'login', component: () => import('pages/AuthPage.vue') }
         ]
     },
 

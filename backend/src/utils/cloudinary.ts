@@ -29,6 +29,13 @@ export async function uploadServiceCover(filePath: any) {
     });
 }
 
+//Upload Courses cover to Cloudinary
+export async function uploadCourseCover(filePath: any) {
+    return await cloudinary.uploader.upload(filePath, {
+        folder: 'Course',
+    });
+}
+
 //Upload Enrollment proof to Cloudinary
 export async function uploadEnrollmentProof(filePath: any) {
     return await cloudinary.uploader.upload(filePath, {

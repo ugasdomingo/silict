@@ -1,5 +1,5 @@
 //Import tools
-import { Schema, model, Model, Document, Date } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import bcryptjs from 'bcryptjs';
 
 //Import Interfaces
@@ -8,8 +8,8 @@ import { IUser } from '../interfaces/IUser';
 //Create User Schema
 const userSchema = new Schema({
     date: {
-        type: Date,
-        default: Date.now(),
+        type: String,
+        required: true,
     },
     name: {
         type: String,
@@ -29,7 +29,7 @@ const userSchema = new Schema({
     },
     role: {
         type: String,
-        default: 'Usuario', //Usuario, Admin, Estudiante
+        required: true, //Usuario, Admin, Estudiante
     },
     endSubscription: {
         type: Date,

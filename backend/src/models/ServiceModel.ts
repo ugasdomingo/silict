@@ -5,8 +5,7 @@ import { Schema, model } from 'mongoose';
 const servicesSchema = new Schema(
     {
         creationDate: {
-            type: Date,
-            default: Date.now(),
+            type: String,
         },
         initalDate: {
             type: Date,
@@ -45,10 +44,26 @@ const servicesSchema = new Schema(
         urlVideo: {
             type: String,
         },
+        price: {
+            type: Number,
+            required: true,
+        },
         pid: {
             type: Schema.Types.ObjectId,
             ref: 'Provider',
             required: true,
+        },
+        rating: {
+            stars: {
+                type: Number,
+            },
+            reviews: {
+                type: String,
+            },
+            uid: {
+                type: Schema.Types.ObjectId,
+                ref: 'User',
+            },
         },
     },
     {
