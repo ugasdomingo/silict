@@ -18,7 +18,10 @@ onMounted(() => {
 
 <template>
     <main class="row col-12 q-px-md justify-between hero-container">
-        <q-img src="public/img/fondo-1.jpg" class="img-hero-big" />
+        <q-img
+            src="https://res.cloudinary.com/minteados/image/upload/v1691428237/silicit/fondo-1_yc3o0o.jpg"
+            class="img-hero-big"
+        />
         <section class="column col-6 justify-center text-white hero-text">
             <h1 class="q-my-none neon text-white">Aprende, Trabaja y Emprende</h1>
             <p>

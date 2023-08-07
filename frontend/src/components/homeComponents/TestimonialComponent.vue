@@ -5,15 +5,15 @@ import { ref } from 'vue';
 //Activate tools
 const images = ref([
     {
-        src: 'public/img/estudiante-1.webp',
+        src: 'https://res.cloudinary.com/minteados/image/upload/v1691427817/silicit/Estudiante_1_dydn9s.webp',
         alt: 'Estudiante 1'
     },
     {
-        src: 'public/img/estudiante-2.webp',
+        src: 'https://res.cloudinary.com/minteados/image/upload/v1691427817/silicit/Estudiante_3_oip3k9.webp',
         alt: 'Estudiante 2'
     },
     {
-        src: 'public/img/estudiante-3.webp',
+        src: 'https://res.cloudinary.com/minteados/image/upload/v1691427817/silicit/Estudiante_2_f8hqir.webp',
         alt: 'Estudiante 3'
     }
 ]);
