@@ -7,12 +7,6 @@ const servicesSchema = new Schema(
         creationDate: {
             type: String,
         },
-        initalDate: {
-            type: Date,
-        },
-        finalDate: {
-            type: Date,
-        },
         title: {
             type: String,
             required: true,
@@ -44,26 +38,13 @@ const servicesSchema = new Schema(
         urlVideo: {
             type: String,
         },
-        price: {
-            type: Number,
-            required: true,
-        },
-        pid: {
-            type: Schema.Types.ObjectId,
-            ref: 'Provider',
-            required: true,
-        },
         rating: {
-            stars: {
-                type: Number,
-            },
-            reviews: {
-                type: String,
-            },
-            uid: {
-                type: Schema.Types.ObjectId,
-                ref: 'User',
-            },
+            type: Number,
+            default: 0,
+        },
+        rewardsPointsWin: {
+            type: Number,
+            default: 0,
         },
     },
     {

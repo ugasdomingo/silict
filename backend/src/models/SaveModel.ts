@@ -7,10 +7,9 @@ const saveSchema = new Schema({
         type: Date,
         required: true,
     },
-    amount: {
-        type: String,
+    contributions: {
+        type: Number,
         required: true,
-        trim: true,
     },
     proof_img: {
         public_id: {

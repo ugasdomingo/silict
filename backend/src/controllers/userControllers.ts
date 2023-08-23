@@ -14,7 +14,7 @@ const expiresIn = 60 * 60 * 24 * 30; // Expiration Cookie Rol
 
 // Register Controller
 export const register = async (req: any, res: any) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     try {
         //Validate unique user
@@ -36,6 +36,7 @@ export const register = async (req: any, res: any) => {
             password,
             date,
             role,
+            phone,
         });
         await user.save();
 
@@ -47,6 +48,8 @@ export const register = async (req: any, res: any) => {
             ...generateToken(user.id),
             role: user.role,
             name: user.name,
+            rewardsPoints: user.rewardsPoints,
+            endSubscription: user.endSubscription,
             refreshToken,
         };
 
@@ -79,6 +82,8 @@ export const login = async (req: any, res: any) => {
             ...generateToken(user.id),
             role: user.role,
             name: user.name,
+            rewardsPoints: user.rewardsPoints,
+            endSubscription: user.endSubscription,
             refreshToken,
         };
 
@@ -115,6 +120,8 @@ export const refresh = async (req: any, res: any) => {
             ...generateToken(user?.id),
             role: user?.role,
             name: user?.name,
+            rewardsPoints: user?.rewardsPoints,
+            endSubscription: user?.endSubscription,
             refreshToken,
         };
 

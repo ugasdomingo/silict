@@ -27,12 +27,20 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    phone: {
+        type: String,
+    },
     role: {
         type: String,
-        required: true, //Usuario, Admin, Estudiante
+        default: 'user', //Usuario, Admin, Estudiante
     },
     endSubscription: {
-        type: Date,
+        type: String,
+        default: 'No',
+    },
+    rewardsPoints: {
+        type: Number,
+        default: 0,
     },
     politiquesAccepted: {
         type: Boolean,
