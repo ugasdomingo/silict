@@ -1,7 +1,9 @@
 //Import tools
-import EnrollmentModel from '../models/EnrollmentModel';
-import { uploadEnrollmentProof, deleteImage } from '../utils/cloudinary';
-import fs from 'fs-extra';
+import { Request, Response } from 'express';
+import { IRequest } from '../helpers/IRequest';
+import { EnrollmentModel, IEnrollment } from '../models/EnrollmentModel';
+import { ServiceModel, IServices } from '../models/ServiceModel';
+import { UserHistoryModel, IUserHistory } from '../models/UserHistoryModel';
 
 // getAllEnrollment --> Line 10
 // createEnrollment --> Line 20
@@ -10,9 +12,10 @@ import fs from 'fs-extra';
 // updateEnrollment --> Line 60
 
 // getAllEnrollment Controller
-export const getAllEnrollment = async (req: any, res: any) => {
+export const getAllEnrollment = async (req: Request, res: Response) => {
     try {
-        const enrollments = await EnrollmentModel.find().lean();
+        const enrollments: IEnrollment[] | null =
+            await EnrollmentModel.find().lean();
 
         res.status(200).json(enrollments);
     } catch (error: any) {
@@ -21,33 +24,37 @@ export const getAllEnrollment = async (req: any, res: any) => {
 };
 
 // createEnrollment Controller
-export const createEnrollment = async (req: any, res: any) => {
+export const createEnrollment = async (req: IRequest, res: Response) => {
     try {
-        const { sid } = req.body;
+        const { serviceId } = req.body;
 
-        const date = new Date(Date.now()).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-        });
-
-        const enrollment = new EnrollmentModel({
-            date,
-            sid,
+        // Create enrollment
+        const enrollment: IEnrollment = new EnrollmentModel({
+            serviceId,
             uid: req.uid,
         });
 
-        if (req.files?.img) {
-            const result = await uploadEnrollmentProof(
-                req.files.img.tempFilePath
-            );
-            enrollment.proof_img = {
-                public_id: result.public_id,
-                secure_url: result.secure_url,
-            };
+        // Get rewards points of service
+        const services: IServices | null = await ServiceModel.findById(
+            serviceId
+        );
 
-            await fs.unlink(req.files.img.tempFilePath);
-        }
+        if (!services)
+            return res.status(404).json({ message: 'Servicio no encontrado' });
+
+        const rewardsPoints = services.starRewardsPoints;
+
+        // Add enrollment to user history
+        const userHistory: IUserHistory | null = await UserHistoryModel.findOne(
+            { uid: req.uid }
+        );
+
+        await userHistory?.addEnrollment(
+            enrollment._id,
+            serviceId,
+            rewardsPoints
+        );
+
         await enrollment.save();
 
         res.status(201).json(enrollment);
@@ -57,24 +64,9 @@ export const createEnrollment = async (req: any, res: any) => {
 };
 
 // getEnrollmentById Controller
-export const getEnrollmentById = async (req: any, res: any) => {
+export const getEnrollmentById = async (req: Request, res: Response) => {
     try {
-        const enrollment = await EnrollmentModel.findById(req.params.id);
-
-        if (!enrollment)
-            return res
-                .status(404)
-                .json({ message: 'Enrollment no encontrado' });
-        res.status(200).json(enrollment);
-    } catch (error: any) {
-        return res.status(500).json({ message: 'Formato id inválido' });
-    }
-};
-
-// deleteEnrollment Controller
-export const deleteEnrollment = async (req: any, res: any) => {
-    try {
-        const enrollment = await EnrollmentModel.findByIdAndDelete(
+        const enrollment: IEnrollment | null = await EnrollmentModel.findById(
             req.params.id
         );
 
@@ -83,27 +75,29 @@ export const deleteEnrollment = async (req: any, res: any) => {
                 .status(404)
                 .json({ message: 'Enrollment no encontrado' });
 
-        await deleteImage(enrollment.proof_img?.secure_url);
-        res.status(204).json(enrollment);
-    } catch (error) {
+        res.status(200).json(enrollment);
+    } catch (error: any) {
         return res.status(500).json({ message: 'Formato id inválido' });
     }
 };
 
 // updateEnrollment Controller
-export const updateEnrollment = async (req: any, res: any) => {
+export const updateEnrollment = async (req: Request, res: Response) => {
     try {
-        const updatedEnrollment = await EnrollmentModel.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
+        const { paymentRef, status } = req.body;
+
+        const Enrollment: IEnrollment | null = await EnrollmentModel.findById(
+            req.params.id
         );
 
-        if (!updatedEnrollment)
+        if (!Enrollment)
             return res
                 .status(404)
                 .json({ message: 'Enrollment no encontrado' });
-        res.status(200).json(updatedEnrollment);
+
+        await Enrollment.changeStatus(status, paymentRef);
+
+        res.status(200).json(Enrollment);
     } catch (error) {
         return res.status(500).json({ message: 'Formato id inválido' });
     }

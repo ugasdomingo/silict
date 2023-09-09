@@ -1,5 +1,6 @@
 //Import tools
-import ServiceModel from '../models/ServiceModel';
+import { Request, Response } from 'express';
+import { ServiceModel, IServices } from '../models/ServiceModel';
 import { uploadServiceCover, deleteImage } from '../utils/cloudinary';
 import fs from 'fs-extra';
 
@@ -10,9 +11,9 @@ import fs from 'fs-extra';
 // updateService --> Line 60
 
 // getAllService Controller
-export const getAllService = async (req: any, res: any) => {
+export const getAllService = async (req: Request, res: Response) => {
     try {
-        const services = await ServiceModel.find().lean();
+        const services: IServices[] | null = await ServiceModel.find().lean();
 
         res.status(200).json(services);
     } catch (error: any) {
@@ -20,11 +21,13 @@ export const getAllService = async (req: any, res: any) => {
     }
 };
 
-export const getAllServiceByCategory = async (req: any, res: any) => {
+export const getAllServiceByCategory = async (req: Request, res: Response) => {
     try {
         const category = req.params.category;
 
-        const services = await ServiceModel.find({ category }).lean();
+        const services: IServices[] | null = await ServiceModel.find({
+            category,
+        }).lean();
 
         res.status(200).json(services);
     } catch (error: any) {
@@ -33,51 +36,50 @@ export const getAllServiceByCategory = async (req: any, res: any) => {
 };
 
 // createService Controller
-export const createService = async (req: any, res: any) => {
+export const createService = async (req: any, res: Response) => {
     try {
         const {
-            initalDate,
-            finalDate,
             title,
+            description,
+            affiliationType,
+            provider,
+            price,
             category,
             tags,
-            description,
             urlVideo,
-            price,
-            pid,
+            starRewardsPoints,
+            endRewardsPoints,
         } = req.body;
 
-        const creationDate = new Date(Date.now()).toLocaleDateString(
-            undefined,
-            {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-            }
-        );
-
-        const service = new ServiceModel({
-            creationDate,
-            initalDate,
-            finalDate,
+        const service: IServices = new ServiceModel({
             title,
+            description,
+            affiliationType,
+            provider,
+            price,
             category,
             tags,
-            description,
             urlVideo,
-            price,
-            pid,
+            starRewardsPoints,
+            endRewardsPoints,
         });
 
-        if (req.files?.img) {
-            const result = await uploadServiceCover(req.files.img.tempFilePath);
-            service.img = {
+        // Upload image to cloudinary
+        if (req.files) {
+            const result = await uploadServiceCover(
+                req.files?.img?.tempFilePath as string
+            );
+            service.cover = {
                 public_id: result.public_id,
                 secure_url: result.secure_url,
             };
 
-            await fs.unlink(req.files.img.tempFilePath);
+            // Delete image from temp folder
+            await fs.unlink(req.files?.img?.tempFilePath, (err) => {
+                if (err) throw err;
+            });
         }
+
         await service.save();
 
         res.status(201).json(service);
@@ -87,12 +89,15 @@ export const createService = async (req: any, res: any) => {
 };
 
 // getServiceById Controller
-export const getServiceById = async (req: any, res: any) => {
+export const getServiceById = async (req: Request, res: Response) => {
     try {
-        const service = await ServiceModel.findById(req.params.id);
+        const service: IServices | null = await ServiceModel.findById(
+            req.params.id
+        );
 
         if (!service)
             return res.status(404).json({ message: 'Service no encontrado' });
+
         res.status(200).json(service);
     } catch (error: any) {
         return res.status(500).json({ message: 'Formato id inválido' });
@@ -100,14 +105,17 @@ export const getServiceById = async (req: any, res: any) => {
 };
 
 // deleteService Controller
-export const deleteService = async (req: any, res: any) => {
+export const deleteService = async (req: Request, res: Response) => {
     try {
-        const service = await ServiceModel.findByIdAndDelete(req.params.id);
+        const service: IServices | null = await ServiceModel.findByIdAndDelete(
+            req.params.id
+        );
 
         if (!service)
             return res.status(404).json({ message: 'Service no encontrado' });
 
-        await deleteImage(service.img?.secure_url);
+        await deleteImage(service.cover?.secure_url);
+
         res.status(204).json(service);
     } catch (error) {
         return res.status(500).json({ message: 'Formato id inválido' });
@@ -115,16 +123,16 @@ export const deleteService = async (req: any, res: any) => {
 };
 
 // updateService Controller
-export const updateService = async (req: any, res: any) => {
+export const updateService = async (req: Request, res: Response) => {
     try {
-        const updatedService = await ServiceModel.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
+        const updatedService: IServices | null =
+            await ServiceModel.findByIdAndUpdate(req.params.id, req.body, {
+                new: true,
+            });
 
         if (!updatedService)
             return res.status(404).json({ message: 'Service no encontrado' });
+
         res.status(200).json(updatedService);
     } catch (error) {
         return res.status(500).json({ message: 'Formato id inválido' });

@@ -1,7 +1,6 @@
 //Import tools
 import { Router } from 'express';
 import { adminAuth } from '../middlewares/adminAuth';
-import fs from 'fs-extra';
 import fileUpload from 'express-fileupload';
 import {
     getAllService,
@@ -23,10 +22,9 @@ serviceRouter.get('/all/:category', getAllServiceByCategory);
 serviceRouter.post(
     '/',
     adminAuth,
-    fileUpload({
-        useTempFiles: true,
-        tempFileDir: './uploads',
-    }),
+    //getFiles,
+    fileUpload({ useTempFiles: true, tempFileDir: './uploads/' }),
+
     createService
 );
 

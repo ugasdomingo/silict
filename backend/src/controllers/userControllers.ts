@@ -1,6 +1,9 @@
 // Import Tools
-import { UserModel } from '../models/UserModel';
+import { Request, Response } from 'express';
+import { UserModel, IUser } from '../models/UserModel';
+import { UserHistoryModel, IUserHistory } from '../models/UserHistoryModel';
 import { generateRefreshToken, generateToken } from '../utils/tokenManager';
+import { getRewardsPoints } from '../helpers/getRewardsPoints';
 import jwt from 'jsonwebtoken';
 
 // Register --> Line 13
@@ -13,34 +16,31 @@ import jwt from 'jsonwebtoken';
 const expiresIn = 60 * 60 * 24 * 30; // Expiration Cookie Rol
 
 // Register Controller
-export const register = async (req: any, res: any) => {
-    const { name, email, password, role, phone } = req.body;
+export const register = async (req: Request, res: Response) => {
+    const { name, email, password, role } = req.body;
 
     try {
         //Validate unique user
-        const uniqueEmail = await UserModel.findOne({ email });
-        if (uniqueEmail)
+        const userExist: IUser | null = await UserModel.findOne({ email });
+        if (userExist)
             return res.status(400).json({ message: 'Usuario ya Existe' });
 
-        //Set date
-        const date = new Date(Date.now()).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-        });
-
         //Create new user
-        const user = new UserModel({
+        const user: IUser = new UserModel({
             name,
             email,
             password,
-            date,
             role,
-            phone,
         });
         await user.save();
 
-        //Email Validation
+        //Email Validation soon
+
+        // Create userHistory
+        const userHistory: IUserHistory = new UserHistoryModel({
+            uid: user.id,
+        });
+        await userHistory.save();
 
         //Generate Token & RefreshToken
         const refreshToken = generateRefreshToken(user.id);
@@ -48,8 +48,7 @@ export const register = async (req: any, res: any) => {
             ...generateToken(user.id),
             role: user.role,
             name: user.name,
-            rewardsPoints: user.rewardsPoints,
-            endSubscription: user.endSubscription,
+            rewardsPoints: userHistory.getRewardsPoints(),
             refreshToken,
         };
 
@@ -61,14 +60,14 @@ export const register = async (req: any, res: any) => {
 };
 
 // Login Controller
-export const login = async (req: any, res: any) => {
+export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     try {
         //Validate User
-        const user = await UserModel.findOne({ email });
+        const user: IUser | null = await UserModel.findOne({ email });
         if (!user)
-            return res.status(401).json({ message: 'Credenciales Inválidas' });
+            return res.status(401).json({ message: 'Usuario no existe' });
 
         //Validate Password
         const validatePassword = await user.comparePassword(password);
@@ -82,9 +81,7 @@ export const login = async (req: any, res: any) => {
             ...generateToken(user.id),
             role: user.role,
             name: user.name,
-            rewardsPoints: user.rewardsPoints,
-            endSubscription: user.endSubscription,
-            refreshToken,
+            rewardsPoints: getRewardsPoints(user.id),
         };
 
         res.status(200).json(response);
@@ -95,7 +92,7 @@ export const login = async (req: any, res: any) => {
 };
 
 // Refresh Controller
-export const refresh = async (req: any, res: any) => {
+export const refresh = async (req: Request, res: Response) => {
     //Payload for req.uid handdle
     interface JwtPayload {
         uid: string;
@@ -113,15 +110,16 @@ export const refresh = async (req: any, res: any) => {
             process.env.JWT_REFRESH as string
         ) as JwtPayload;
 
-        const user = await UserModel.findById(uid);
+        const user: IUser | null = await UserModel.findById(uid);
 
-        const refreshToken = generateRefreshToken(user?.id);
+        if (!user) throw new Error('Debes hacer login para ver esta página');
+
+        const refreshToken = generateRefreshToken(user.id);
         const response = {
-            ...generateToken(user?.id),
+            ...generateToken(user.id),
             role: user?.role,
             name: user?.name,
-            rewardsPoints: user?.rewardsPoints,
-            endSubscription: user?.endSubscription,
+            rewardsPoints: getRewardsPoints(user.id),
             refreshToken,
         };
 
@@ -132,15 +130,16 @@ export const refresh = async (req: any, res: any) => {
 };
 
 // Logout Controller
-export const logout = async (req: any, res: any) => {
+export const logout = async (req: Request, res: Response) => {
     res.clearCookie('refreshToken');
     res.status(204).json({ mesage: 'Logout' });
 };
 
 // allUsers Controller
-export const allUsers = async (req: any, res: any) => {
+export const allUsers = async (req: Request, res: Response) => {
     try {
-        const user = await UserModel.find().lean();
+        const user: IUser[] | null = await UserModel.find().lean();
+
         return res.status(200).json(user);
     } catch (error: any) {
         return res.status(500).json({ message: error.message });

@@ -8,7 +8,6 @@ import {
     createSave,
     getSaveById,
     updateSave,
-    deleteSave,
 } from '../controllers/saveControllers';
 
 //Define router
@@ -17,13 +16,11 @@ const saveRouter = Router();
 //Routes
 saveRouter.get('/all', adminAuth, getAllSave);
 
-saveRouter.post('/', userAuth, createSave);
+saveRouter.post('/', userOrAdminAuth, createSave);
 
 saveRouter.get('/:id', userOrAdminAuth, getSaveById);
 
 saveRouter.put('/:id', adminAuth, updateSave);
-
-saveRouter.delete('/:id', adminAuth, deleteSave);
 
 //Export routes
 export default saveRouter;

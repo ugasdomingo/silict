@@ -8,7 +8,6 @@ import {
     createEnrollment,
     getEnrollmentById,
     updateEnrollment,
-    deleteEnrollment,
 } from '../controllers/enrollmentControllers';
 
 //Define router
@@ -22,8 +21,6 @@ enrollmentRouter.post('/', userAuth, createEnrollment);
 enrollmentRouter.get('/:id', userOrAdminAuth, getEnrollmentById);
 
 enrollmentRouter.put('/:id', adminAuth, updateEnrollment);
-
-enrollmentRouter.delete('/:id', adminAuth, deleteEnrollment);
 
 //Export routes
 export default enrollmentRouter;

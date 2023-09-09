@@ -1,7 +1,8 @@
 //Import tools
-import SaveModel from '../models/SaveModel';
-import { uploadSaveProof, deleteImage } from '../utils/cloudinary';
-import fs from 'fs-extra';
+import { Request, Response } from 'express';
+import { IRequest } from '../helpers/IRequest';
+import { SaveModel, ISave } from '../models/SaveModel';
+import { UserHistoryModel, IUserHistory } from '../models/UserHistoryModel';
 
 // getAllSave --> Line 10
 // createSave --> Line 20
@@ -10,9 +11,9 @@ import fs from 'fs-extra';
 // updateSave --> Line 60
 
 // getAllSave Controller
-export const getAllSave = async (req: any, res: any) => {
+export const getAllSave = async (req: Request, res: Response) => {
     try {
-        const saves = await SaveModel.find().lean();
+        const saves: ISave[] | null = await SaveModel.find().lean();
 
         res.status(200).json(saves);
     } catch (error: any) {
@@ -21,28 +22,21 @@ export const getAllSave = async (req: any, res: any) => {
 };
 
 // createSave Controller
-export const createSave = async (req: any, res: any) => {
+export const createSave = async (req: IRequest, res: Response) => {
     try {
         const { amount } = req.body;
 
-        const date = new Date(Date.now()).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-        });
-
-        const save = new SaveModel({ amount, date, uid: req.uid });
-
-        if (req.files?.img) {
-            const result = await uploadSaveProof(req.files.img.tempFilePath);
-            save.proof_img = {
-                public_id: result.public_id,
-                secure_url: result.secure_url,
-            };
-
-            await fs.unlink(req.files.img.tempFilePath);
-        }
+        // Create save
+        const save: ISave = new SaveModel({ amount, uid: req.uid });
         await save.save();
+
+        // Add save to user history
+        const userHistory: IUserHistory | null = await UserHistoryModel.findOne(
+            {
+                uid: req.uid,
+            }
+        );
+        await userHistory?.addSave(save._id, amount);
 
         res.status(201).json(save);
     } catch (error: any) {
@@ -51,45 +45,32 @@ export const createSave = async (req: any, res: any) => {
 };
 
 // getSaveById Controller
-export const getSaveById = async (req: any, res: any) => {
+export const getSaveById = async (req: Request, res: Response) => {
     try {
-        const save = await SaveModel.findById(req.params.id);
+        const save: ISave | null = await SaveModel.findById(req.params.id);
 
         if (!save)
             return res.status(404).json({ message: 'Save no encontrado' });
+
         res.status(200).json(save);
     } catch (error: any) {
         return res.status(500).json({ message: 'Formato id inválido' });
     }
 };
 
-// deleteSave Controller
-export const deleteSave = async (req: any, res: any) => {
-    try {
-        const save = await SaveModel.findByIdAndDelete(req.params.id);
-
-        if (!save)
-            return res.status(404).json({ message: 'Save no encontrado' });
-
-        await deleteImage(save.proof_img?.secure_url);
-        res.status(204).json(save);
-    } catch (error) {
-        return res.status(500).json({ message: 'Formato id inválido' });
-    }
-};
-
 // updateSave Controller
-export const updateSave = async (req: any, res: any) => {
+export const updateSave = async (req: Request, res: Response) => {
     try {
-        const updatedSave = await SaveModel.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
+        const { paymentRef, status } = req.body;
 
-        if (!updatedSave)
+        const Save: ISave | null = await SaveModel.findById(req.params.id);
+
+        if (!Save)
             return res.status(404).json({ message: 'Save no encontrado' });
-        res.status(200).json(updatedSave);
+
+        await Save.changeStatus(status, paymentRef);
+
+        res.status(200).json(Save);
     } catch (error) {
         return res.status(500).json({ message: 'Formato id inválido' });
     }

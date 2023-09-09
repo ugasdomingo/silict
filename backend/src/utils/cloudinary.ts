@@ -9,37 +9,10 @@ cloudinary.config({
     secure: true,
 });
 
-//Upload logo to Cloudinary
-export async function uploadProviderLogo(filePath: any) {
-    return await cloudinary.uploader.upload(filePath, {
-        folder: 'Provider',
-    });
-}
-//Upload Save Proof to Cloudinary
-export async function uploadSaveProof(filePath: any) {
-    return await cloudinary.uploader.upload(filePath, {
-        folder: 'Saves',
-    });
-}
-
 //Upload Services cover to Cloudinary
-export async function uploadServiceCover(filePath: any) {
+export async function uploadServiceCover(filePath: string) {
     return await cloudinary.uploader.upload(filePath, {
         folder: 'Service',
-    });
-}
-
-//Upload Courses cover to Cloudinary
-export async function uploadCourseCover(filePath: any) {
-    return await cloudinary.uploader.upload(filePath, {
-        folder: 'Course',
-    });
-}
-
-//Upload Enrollment proof to Cloudinary
-export async function uploadEnrollmentProof(filePath: any) {
-    return await cloudinary.uploader.upload(filePath, {
-        folder: 'Enrollments',
     });
 }
 

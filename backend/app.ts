@@ -7,9 +7,11 @@ import cookieParser from 'cookie-parser';
 
 //Import Routes
 import userRouter from './src/routes/userRouter';
+import userHistoryRouter from './src/routes/userHistoryRouter';
 import serviceRouter from './src/routes/serviceRouter';
 import saveRouter from './src/routes/saveRouter';
 import enrollmentRouter from './src/routes/enrollmentRouter';
+import affiliationRouter from './src/routes/affiliationRouter';
 
 //Define app
 const app = express();
@@ -40,9 +42,11 @@ app.use(cookieParser());
 
 //Routes
 app.use('/v1/api/', userRouter);
+app.use('/v1/api/history', userHistoryRouter);
 app.use('/v1/api/services', serviceRouter);
 app.use('/v1/api/saves', saveRouter);
 app.use('/v1/api/enrollment', enrollmentRouter);
+app.use('/v1/api/affiliation', affiliationRouter);
 
 //Export app
 export default app;
